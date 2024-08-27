@@ -1,0 +1,390 @@
+ #Game choice is blackjack. designed by Stephen Akrong & Maksim Shekhtman.
+import random
+from colorama import Fore
+from math import floor
+from math import ceil
+
+# *** Sometimes the words bot and dealer are used interchangeably so if you see it in the code or output, think of them as te same thing ***
+
+
+# All of the lists used
+og_card_deck = ['2♥', '3♥', '4♥' , '5♥' , '6♥', '7♥', '8♥', '9♥', '10♥', 'J♥', 'Q♥', 'K♥', 'A♥', '2♦', '3♦', '4♦', '5♦', '6♦', '7♦', '8♦', '9♦', '10♦', 'J♦', 'Q♦', 'K♦', 'A♦', '2♣️', '3♣', '4♣', '5♣', '6♣', '7♣', '8♣', '9♣', '10♣', 'J♣', 'Q♣', 'K♣', 'A♣', '2♠', '3♠', '4♠', '5♠', '6♠', '7♠', '8♠', '10♠', 'J♠', 'Q♠', 'K♠', 'A♠'] # This list does not change
+card_deck = ['2♥', '3♥', '4♥' , '5♥' , '6♥', '7♥', '8♥', '9♥', '10♥', 'J♥', 'Q♥', 'K♥', 'A♥', '2♦', '3♦', '4♦', '5♦', '6♦', '7♦', '8♦', '9♦', '10♦', 'J♦', 'Q♦', 'K♦', 'A♦', '2♣️', '3♣', '4♣', '5♣', '6♣', '7♣', '8♣', '9♣', '10♣', 'J♣', 'Q♣', 'K♣', 'A♣', '2♠', '3♠', '4♠', '5♠', '6♠', '7♠', '8♠', '10♠', 'J♠', 'Q♠', 'K♠', 'A♠'] # During the round cards are taken out of this list, and after the round, this variable is set to og_card_deck to reset the deck.
+plr_deck = [] # The list for the player's hand which starts off empty
+bot_deck = [] # The list for the bot's/dealer's hand which starts off empty
+
+def suggestion(situation, total, bot_total): # This function is for the beginner mode, which prints out suggestions on what the player should do based on the situation, player's score, and bot's score.
+  if situation == "first_ace":
+    if total < 10:
+      print(Fore.MAGENTA + "\n I would recommend you playing this ace as an 11." + Fore.LIGHTMAGENTA_EX + " Since your score is not greater than 10, no matter what the value of your other card is, this would get you close to 21 without risking a loss. 🧐")
+    elif total == 10:
+      print(Fore.MAGENTA + "\n I would highly recommend you play this ace as an 11." + Fore.LIGHTMAGENTA_EX + " This situation (getting a total of 21 on the first turn) is what you would call a natural, or black jack. This will give you a near guaranteed win of the round. 🧐")
+    elif total > 10:
+      print(Fore.MAGENTA + "\n I would recommend you play this ace as a 1." + Fore.LIGHTMAGENTA_EX + " If you were to play this ace as an 11, you would bust (going over 21 and automatically losing). This is the safest option. 🧐")
+  elif situation == "reg_ace":
+    if total < 10:
+      print(Fore.MAGENTA + "\n I would recommend you play this ace as an 11."+ Fore.LIGHTMAGENTA_EX + " You will have a score that is closer to 21, and you won't bust (going over 21 and automatically losing). 🧐")
+    elif total == 10:
+      print(Fore.MAGENTA + "\n I would highly recommend you play this ace as an 11." + Fore.LIGHTMAGENTA_EX + " Even though you would not get a natural or black jack (Getting 21 points from your first two cards through an ace and a card with a value of 10), you are almost guaranteed a win since you will have 21 points. 🧐")
+    elif total >= 10:
+      print(Fore.MAGENTA + "\n I would recommend playing this ace as a 1." + Fore.LIGHTMAGENTA_EX + " If you were to play this ace as an 11, you would bust (going over 21 points and automatically losing). 🧐")
+
+  elif situation == "hit/stand/dd" or situation == "hit/stand":
+    if situation == "hit/stand/dd":
+      if total == 11:
+        print(Fore.MAGENTA + "\n I would recommend you double down." + Fore.LIGHTMAGENTA_EX + " Statistically, there is a high chance that one more card can give you a black jack (getting 21 points), and at the very least you won't go over 21. 🧐")
+      elif total == 10 and bot_total >= 2 and bot_total <= 9:
+        print(Fore.MAGENTA + "\n I would recommend you double down." + Fore.LIGHTMAGENTA_EX + " Based on basic black jack strategy derived from statistics on the game, this is the safest option. 🧐")
+      elif total == 10:
+        print(Fore.MAGENTA + "\n I would recommend you hit." + Fore.LIGHTMAGENTA_EX + " Based on basic black jack strategy derived from statistics on the game, this is the safest option. 🧐")
+      elif total == 9 and bot_total >= 3 and bot_total <= 6:
+        print(Fore.MAGENTA + "\n I would recommend you double down." + Fore.LIGHTMAGENTA_EX + " Based on basic black jack strategy derived from statistics on the game, this is the safest option. 🧐")
+      elif total == 9:
+        print(Fore.MAGENTA + "\n I would recommend you hit." + Fore.LIGHTMAGENTA_EX + " Based on basic black jack strategy derived from statistics on the game, this is the safest option. 🧐")
+    elif situation == "hit/stand":
+      if total == 11:
+        print(Fore.MAGENTA + "\n I would highly recommend you hit." + Fore.LIGHTMAGENTA_EX + " No matter what happens, you will not go over 21 so this is the safest option. 🧐")
+      elif total == 10:
+        print(Fore.MAGENTA + "\n I would recommend you hit." + Fore.LIGHTMAGENTA_EX + " Based on basic black jack strategy derived from statistics on the game, this is the safest option. 🧐")
+      elif total == 9:
+        print(Fore.MAGENTA + "\n I would recommend you hit." + Fore.LIGHTMAGENTA_EX + " Based on basic black jack strategy derived from statistics on the game, this is the safest option. 🧐")
+    if total == 21:
+      print(Fore.MAGENTA + "\n I would HIGHLY recommend that you stand." + Fore.LIGHTMAGENTA_EX + " If you do not stand, and you decide to hit you are guaranteed to lose by busting (going over 21). 🧐")
+    elif total >= 17:
+      print(Fore.MAGENTA + "\n I would recommend you stand." + Fore.LIGHTMAGENTA_EX + " The chances of busting (going over 21) are a lot higher when you have a score total over 17 or higher, so standing will allow you to avoid any unnecessary risks. However, the choice is up to you. 🧐")
+    elif total >= 13 and total <= 16  and bot_total >= 7 and bot_total <= 11: #*
+      print(Fore.MAGENTA + "\n I would recommend you hit." + Fore.LIGHTMAGENTA_EX + " Based on basic black jack strategy derived from statistics on the game, this is the safest option. 🧐")
+    elif total >= 13 and total <= 16:
+      print(Fore.MAGENTA + "\n I would recommend you stand." + Fore.LIGHTMAGENTA_EX + " Based on basic black jack strategy derived from statistics on the game, this is the safest option. 🧐")
+    elif total == 12 and bot_total >= 4 and bot_total <= 6:
+      print(Fore.MAGENTA + "\n I would recommend you stand." + Fore.LIGHTMAGENTA_EX + " Based on basic black jack strategy derived from statistics on the game, this is the safest option. 🧐")
+    elif total == 12:
+      print(Fore.MAGENTA + "\n I would recommend you hit" + Fore.LIGHTMAGENTA_EX + " Based on basic black jack strategy derived from statistics on the game, this is the safest option. 🧐")
+    elif total <= 8:
+      print(Fore.MAGENTA + "\n I would HIGHLY recommend you hit." + Fore.LIGHTMAGENTA_EX + " Based on basic black jack strategy derived from statistics on the game, this is the safest option. 🧐")
+
+    elif total == 12 and bot_total >= 4 and bot_total <= 6:
+      print(Fore.MAGENTA + "\n I would recommend you stand." + Fore.LIGHTMAGENTA_EX + " Based on basic black jack strategy derived from statistics on the game, this is the safest option. 🧐")
+    elif total == 12:
+      print(Fore.MAGENTA + "\n I would recommend you hit" + Fore.LIGHTMAGENTA_EX + " Based on basic black jack strategy derived from statistics on the game, this is the safest option. 🧐")
+
+
+
+def valid_check(valid_inputs, message): # This function checks the validity of a user input with a parameter called valid_inputs which is a list to see if the user input is one of those valid inputs in the list.
+  valid = False
+  while valid == False:
+    user_input = input(message)
+    for x in valid_inputs:
+      if user_input.lower() == x:
+        valid = True
+        return user_input
+    print(Fore.BLUE + "Invalid input. please enter one of the valid inputs: " + Fore.WHITE)
+    print(valid_inputs)
+  # This function assigns the value of a card, with the special case of the ace for the player, giiving the player a user input to decide the value of the ace.
+def card_value(card, isbot, total, bot_total, begin_mode, first_cards): 
+  if card[0].isdigit() == True:
+    card = card[0]
+    if card[0] == "1":
+      card = 10
+  elif card[0] == "J" or card[0] == "Q" or card[0] == "K":
+    card = 10
+  elif card[0] == "A":
+    if isbot == False:
+      ace_choice_valid = False
+      while ace_choice_valid == False:
+        if begin_mode == "y":
+          if first_cards == True:
+            suggestion("first_ace", total, bot_total)
+          elif first_cards == False:
+            suggestion("reg_ace", total, bot_total)
+
+        ace_choice = input(Fore.YELLOW + "\n You have an ace in your deck. You will have the option of choosing either a 1 or 11. Please type your value choice here!")
+        if ace_choice == "1" or ace_choice == "11":
+          card = int(ace_choice)
+          ace_choice_valid = True
+        else:
+          print("Invalid input given, please type one of the two valid inputs. (1 or 11)")
+      valid_check
+    elif isbot == True:
+      if total + 11 <= 21:
+        card = 11 
+      else:
+        card = 1
+  return int(card)
+
+  # Rules printed out based on a user input on whether the user wants to read the rules.
+rules = valid_check(["y", "n"], Fore.LIGHTGREEN_EX + "Hello! Welcome to the online Blackjack Game! Would you like to read the rules? (y/n)")
+if rules == "y":
+  print(Fore.LIGHTGREEN_EX + " \n \n - In this game you will be matched up against a skilled computer opponent. Your goal is to defeat the computer by getting closer to a card value score of 21. \n \n - There will also be a betting system in place.\n \n - You will start off with 200 VBUCKS (Our chosen currency, and will have the option to continue playing unless you lose all your currency. If you win you will get a price match, and you will recieve your credits, plus another amount equal to the placed bet. Otherwise, if you lose, your currency is lost.) \n \n - The rules of the game are, you will automatically dealt two cards by the dealer. You will also be able to see one of the dealers cards. You will then look at your cards and determine wether you will risk losing the game by drawing another card, and possibly getting closer to a score of 21, or risking the game by staying with your current card value. \n \n - There are 6 possible ways to win, lose, and tie. \n - The winning possibilities for the player are if the player goes under 21, and the dealer busts(goes over 21), and also if the player is closer to 21 then the dealer! \n - The possibilities for losing are, if the player and dealer both go over 21. Also if the player goes over 21, and the dealer doesn't. And finally if the dealer has a score closer to 21! \n - The final possibility in BlackJack is a tie. A tie occurs if the player and dealer reach the same game score!\n \n" + Fore.RED + "Good luck.....")
+  print("\n \n One more thing before you go off and play. \n \n Here are some card values you may not have known. \n Kings, Queens, and Jacks are worth 10, and an Ace has the option to be worth either 1 or 11.")
+
+beginner_mode = valid_check(["y", "n"], Fore.MAGENTA + "\n Finally, would you like to play on beginner mode? In beginner mode, you will be given suggestions on what decision to make based on proven black jack strategies. Remember that you do not have to actually listen to these suggestions, they are just suggestions. (y/n)")
+
+game_over = False
+vbuck_total = 200
+print(Fore.WHITE + "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+while game_over == False:
+  
+  card_deck = og_card_deck
+  # This section of the code has the betting system
+  while vbuck_total > 0:
+    vbuck_choice = input("\n" + Fore.WHITE + "You have a current balance of " + Fore.CYAN + str(vbuck_total) + Fore.WHITE + " vbucks. How many Vbucks do you want to bet on this round?")
+    if vbuck_choice.isdigit():
+      vbuck_choice = int(vbuck_choice)
+      if vbuck_choice >= 1 and vbuck_choice <= vbuck_total:
+        break
+      else:
+        print(Fore.BLUE + "Invalid vbuck selection. Remember only input a number" + Fore.CYAN + " 1 " + Fore.BLUE + "through " + Fore.CYAN + str(vbuck_total) + Fore.BLUE + ".")
+    else:
+      print(Fore.BLUE + "Invalid vbuck selection. Remember only input a number" + Fore.CYAN + " 1 " + Fore.BLUE + "through " + Fore.CYAN + str(vbuck_total) + Fore.BLUE + ".")
+  print("Okay You have Bet, " + str(vbuck_choice) + " Vbucks")
+  if vbuck_total < 0:
+    print(Fore.BLACK + "YOU HAVE LOST ALL YOUR VBUCKS. GAME OVER")
+    break
+
+  #Bot's cards are randomly chosen, and added and removed from the appropriate list
+  bot_card1 = random.choice(card_deck)
+  bot_deck.append(bot_card1)
+  card_deck.remove(bot_card1)
+
+  bot_card2 = random.choice(card_deck)
+  bot_deck.append(bot_card2)
+  card_deck.remove(bot_card2)
+
+  #Bot card's value is assigned through the card_value function and dealer's card is printed out.
+  bot_card1_val = card_value(bot_card1, True, 0, "N/A", "N/A", "N/A")
+  bot_card2_val = card_value(bot_card2, True, bot_card1_val, "N/A", "N/A", "N/A")
+  bot_total = bot_card1_val
+  print(Fore.GREEN + "\n The DEALER'S first card is a " + Fore.RED + bot_card1 + Fore.GREEN + " with a value of " + Fore.RED + str(bot_card1_val) + Fore.GREEN + ". The second card is currently face down.")
+  #Players cards are randomly chosen, and added and removed from the appropriate list
+  plr_card1 = card_deck[random.randint(0, len(card_deck) - 1)]
+  plr_deck.append(plr_card1)
+  card_deck.remove(plr_card1)
+
+  plr_card2 = card_deck[random.randint(0,len(card_deck) - 1)]
+  plr_deck.append(plr_card2)
+  card_deck.remove(plr_card2)
+
+  #Player card's value is assigned through the card_value function and dealer's card is printed out.
+  plr_card1_val = card_value(plr_card1, False, 0, bot_total, beginner_mode, True)
+  print(Fore.WHITE + "\n Your first card is a " + Fore.RED + plr_card1 + Fore.WHITE + " with a value of " + Fore.RED + str(plr_card1_val))
+  plr_card2_val = card_value(plr_card2, False, plr_card1_val, bot_total, beginner_mode, True)
+  #Player's starting value
+  plr_total = plr_card1_val + plr_card2_val 
+
+  print(Fore.WHITE + "\n Your second card is a " + Fore.RED + plr_card2 + Fore.WHITE + " with a value of " + Fore.RED + str(plr_card2_val) + Fore.WHITE + ". This makes your current total " + Fore.RED + str(plr_total) + Fore.WHITE + ".")
+  #Scoreboard
+  print(Fore.WHITE + "\n Scoreboard: ")
+  print(Fore.WHITE + "Your score: " + Fore.BLUE + str(plr_total))
+  print(Fore.WHITE + "Robot's score: " + Fore.GREEN + str(bot_total))
+
+  auto_stand = False # This variable is used in situations of the player either doubling down or busting
+  # This is the algorithm for insurance which acts just like in the real game, a side bet you can take if the bot's first card is an ace.
+  if bot_card1[0] == "A":
+    insurance_valid = False
+    max_insurance = floor(vbuck_choice / 2)
+    while insurance_valid == False:
+      insurance = input(Fore.LIGHTBLUE_EX + "\n Would you like insurance for if the dealer will get a natural or black jack? (This is a side bet that you are able to bet up to half your original bet, and you will get that side bet amount if the dealer's second card has a value of 10 giving them black jack. This also pays 2:1.) If yes, type the amount (CAN NOT BE OVER " + str(max_insurance) + " VBUCKS AND MUST BE A NUMBER), and if not, just type 0.")
+      if insurance.isdigit() == True:
+        if int(insurance) > 0 and int(insurance) <= max_insurance: 
+          print(Fore.WHITE + "\n Insurance taken.")
+          if bot_card2[0] == 1:
+            print(Fore.WHITE + "\n The dealer got a natural or black jack, so you will be awarded your side bet of " + Fore.CYAN + insurance + ".")
+            vbuck_total += 2*int(insurance)
+          else:
+            print(Fore.WHITE + "\n The dealer did not have a black jack, so your vbucks total will decrease by " + Fore.CYAN + insurance + ".")
+            vbuck_total -= int(insurance)
+          insurance_valid = True
+        elif insurance == "0":
+          print(Fore.WHITE + "\n No insurance.")
+          insurance_valid = True
+        else:
+          print(Fore.BLUE + "\n Please enter a valid input.")
+      else:
+        print(Fore.BLUE + "\n Please enter a valid input.")
+  hit_stand_round = 0
+  while True: # Main loop of the game giving the user the decision to hit stand or double down, and when they stand, the bot's play begins.
+    
+    hit_stand_round += 1
+    if auto_stand == False:
+      if vbuck_choice * 2 <= vbuck_total: # Doubling down is only allowed when this condition is met.
+        if beginner_mode == "y":
+          suggestion("hit/stand/dd", plr_total, bot_total) # Suggestion function is called for the situation where u can hit stand or double down.
+        choice = valid_check(["stand", "hit", "dd"], Fore.WHITE + "\n Would you like to hit 👊 (draw another card), stand 🧍‍♂️ (leave your cards as is and let the dealer play) or double down 😈 (doubling your wager for an extra card, but you will be forced to stand after)? (THE THREE CHOICES ARE 'stand', 'hit', AND 'dd')")
+      elif vbuck_choice * 2 > vbuck_total: # This conditional is for if doubling down isnt a possibility
+        if beginner_mode == "y":
+          suggestion("hit/stand", plr_total, bot_total) # Suggestion function is called for the situation where u can hit stand or double down.
+        choice = valid_check(["stand", "hit"], Fore.WHITE + "\n Would you like to hit 👊 (draw another card) or stand 🧍‍♂️ (leave your cards as is and let the dealer play)? (THE TWO CHOICES ARE 'stand', 'hit')")
+
+    if auto_stand == True: 
+      choice = "stand"
+    if choice.lower() == "dd":
+      vbuck_choice = vbuck_choice * 2
+      auto_stand = True
+      choice = "hit"
+
+    # This is the section of code that handles the hitting (drawing a random card) algorithm of the code.
+    if choice.lower() == "hit":
+      if auto_stand == True:
+        print("\n You have decided to double down 😈 and will now be dealt one random card before being forced to stand.")
+      else:
+        print("\n You have decided to hit 👊 and will now be dealt a random card from the deck.")
+      random.shuffle(card_deck)
+      new_plr_card = card_deck[1]
+      card_deck.remove(new_plr_card)
+      plr_deck.append(new_plr_card)
+      new_plr_card_val = card_value(new_plr_card, False, plr_total, "N/A", "N/A", "N/A") # The last parameters are N/A because they are not necessary when the function is called in this situation.
+      plr_total += new_plr_card_val
+
+      print(Fore.WHITE + "\n You drew a " + Fore.RED + new_plr_card + Fore.WHITE +". This makes your new total " + Fore.RED +  str(plr_total) + ".")
+      print(Fore.WHITE + "Scoreboard: ")
+      print(Fore.WHITE + "Your score: " + Fore.BLUE + str(plr_total))
+      print(Fore.WHITE + "Robot's score: " + Fore.GREEN + str(bot_total))
+      # When the player's score is over 21, auto_stand is set True which will make it seem like the player chose to stand, not allowing them to hit.
+      if plr_total > 21:
+        print(Fore.BLACK + "OH NO! YOU WENT OVER 21 AND GOT BUSTED! 💥")
+        auto_stand = True
+        continue
+    # This section of the code handles the standing algorithm (where the player stops drawing card and the bot draws until it gets a score of 17 or greater).
+    if choice.lower() == "stand":
+      print(Fore.WHITE + "\n YOU HAVE STOOD 🧍‍♂️. THE DEALER WILL NOW MAKE HIS DECISIONS...🤔")
+      bot_total += bot_card2_val 
+      print(Fore.GREEN + "\n The dealer's first card was a " + Fore.RED + bot_card1 + Fore.GREEN + " with a value of " + Fore.RED + str(bot_card1_val) + Fore.GREEN + ", and the dealer's second card was... a " + Fore.RED + bot_card2 + Fore.GREEN + "! with a value of " + Fore.RED + str(bot_card2_val) + Fore.GREEN + ". This makes the dealer's current total " + Fore.RED + str(bot_total) + Fore.GREEN + ".")
+      new_bot_card = ""
+      new_bot_card_val = 0
+      while bot_total < 17:
+        print(Fore.GREEN + "\n The dealer has decided to hit 👊.")
+        new_bot_card = card_deck[random.randint(0,len(card_deck) - 1)]
+        card_deck.remove(new_bot_card)
+        bot_deck.append(new_bot_card)
+        new_bot_card_val = card_value(new_bot_card, True, bot_total, "N/A", "N/A", "N/A")
+        bot_total += new_bot_card_val
+        print(Fore.GREEN + "\n The dealer's new card was a, " + Fore.RED + new_bot_card + Fore.GREEN + " with a value of " + Fore.RED + str(new_bot_card_val) + Fore.GREEN + ". This makes the dealer's new total " + Fore.RED + str(bot_total))
+      if bot_total > 21:
+        print(Fore.BLACK + "\n THE DEALER GOT BUSTED 💥")
+      print(Fore.WHITE  + "\n The dealer has now decided to stand! 🧍‍♂️")
+      print(Fore.WHITE + "\n Scoreboard: ")
+      print(Fore.WHITE + "Your score: " + Fore.BLUE + str(plr_total))
+      print(Fore.WHITE + "Robot's score: " + Fore.GREEN + str(bot_total))
+      print(Fore.WHITE + "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+      #This last section of the code handles every win/loss scenario with its own specific aand respective message and outcome. 
+      if plr_total > 21 and bot_total > 21:
+        print(Fore.RED + "\n You and the dealer both went over 21. The casino rules show that you lose... 😓")
+        vbuck_total = vbuck_total - vbuck_choice
+        print(Fore.GREEN + "Since you lost your game, your new vbuck total is " + Fore.CYAN + str(vbuck_total) + Fore.GREEN + ".")
+        if vbuck_total <= 0:
+          print("YOU have reached a total of 0 vbucks no more playing for you...")
+          break
+        plr_deck.clear()
+        bot_deck.clear()
+        plr_total = 0
+        bot_total = 0
+        rematch = valid_check(["y", "n"], Fore.WHITE + "\n Would you like to continue playing and go to the next round? (y/n)")
+        if rematch == "y":
+          rematch_valid = True
+        elif rematch == "n":
+          game_over = True
+          rematch_valid = True
+        break
+      elif plr_total > 21 and bot_total <= 21:
+        print(Fore.RED + "\n You went over the score of 21, and the dealer didn't, so you lose... 😓")
+        vbuck_total = vbuck_total - vbuck_choice
+        print(Fore.GREEN + "Since you lost your game, your new vbuck total is " + Fore.CYAN + str(vbuck_total) + Fore.GREEN + ".")
+        if vbuck_total <= 0:
+          print("YOU have reached a total of 0 vbucks no more playing for you...")
+          break
+        plr_deck.clear()
+        bot_deck.clear()
+        plr_total = 0
+        bot_total = 0
+        rematch = valid_check(["y", "n"], Fore.WHITE + "\n Would you like to continue playing and go to the next round? (y/n)")
+        if rematch == "y":
+          rematch_valid = True
+        elif rematch == "n":
+          game_over = True
+          rematch_valid = True
+        break
+      elif plr_total <= 21 and bot_total > 21:
+        print(Fore.YELLOW + "\n The dealer went over the score of 21, and you didn't, so YOU WIN! 🥳")
+        vbuck_total = vbuck_total + vbuck_choice
+        print(Fore.GREEN + "Since you won your game, your new vbuck total is " + Fore.CYAN + str(vbuck_total) + Fore.GREEN + ".")
+        if vbuck_total <= 0:
+          print("YOU have reached a total of 0 vbucks no more playing for you...")
+          break
+        plr_deck.clear()
+        bot_deck.clear()
+        plr_total = 0
+        bot_total = 0
+        rematch = valid_check(["y", "n"], Fore.WHITE + "\n Would you like to continue playing and go to the next round? (y/n)")
+
+        if rematch == "y":
+          rematch_valid = True
+        elif rematch == "n":
+          game_over = True
+          rematch_valid = True
+        print(Fore.WHITE + "There are currently " + str(len(card_deck)) + " cards in the deck.")
+        break
+      elif plr_total == bot_total:
+        print(Fore.WHITE + "\n You and the dealer both have the same card value. You tied! 🤷‍♂️")
+        print(Fore.GREEN + "Since you tied in your match, your Vbuck total will stay the same")
+        plr_deck.clear()
+        bot_deck.clear()
+        plr_total = 0
+        bot_total = 0
+        rematch = valid_check(["y", "n"], Fore.WHITE + "\n Would you like to continue playing and go to the next round? (y/n)")
+
+        if rematch == "y":
+          rematch_valid = True
+        elif rematch == "n":
+          game_over = True
+          rematch_valid = True
+        break
+      elif plr_total > bot_total:
+        print(Fore.YELLOW + "\n You have a higher card value than the dealer, YOU WIN! 🥳")
+        if plr_total == 21 and hit_stand_round == 1:
+          vbuck_choice = ceil(vbuck_choice*1.5)
+          print(Fore.WHITE + "\n Because you got black jack (Having a score of 21 from you starting hand), your payout will be multiplied by 1.5!")
+
+        vbuck_total = vbuck_total + vbuck_choice
+        print(Fore.GREEN + "Since you won your game, your new vbuck total is " + Fore.CYAN + str(vbuck_total) + Fore.GREEN + ".")
+        if vbuck_total <= 0:
+          print("YOU have reached a total of 0 vbucks no more playing for you...")
+          break
+        plr_deck.clear()
+        bot_deck.clear()
+        plr_total = 0
+        bot_total = 0
+        rematch = valid_check(["y", "n"], Fore.WHITE + "\n Would you like to continue playing and go to the next round? (y/n)")
+
+        if rematch == "y":
+          rematch_valid = True
+        elif rematch == "n":
+          game_over = True
+          rematch_valid = True
+        break
+      elif plr_total < bot_total:
+        print(Fore.RED + "\n The dealer has a higher card value than you, YOU LOSE! 😓")
+        vbuck_total = vbuck_total - vbuck_choice
+        print(Fore.GREEN + "Since you lost your game, your new vbuck total is " + Fore.CYAN + str(vbuck_total) + Fore.GREEN + ".")
+        if vbuck_total <= 0:
+          print("YOU have reached a total of 0 vbucks no more playing for you...")
+          break
+        plr_deck.clear()
+        bot_deck.clear()
+        plr_total = 0
+        bot_total = 0
+        rematch = valid_check(["y", "n"], Fore.WHITE + "\n Would you like to continue playing and go to the next round? (y/n)")
+
+        if rematch == "y":
+          rematch_valid = True
+        elif rematch == "n":
+          game_over = True
+          rematch_valid = True
+        break
+      else: 
+        print("Exception Found.")
+
+  #This is the last break to end the game when the vbucks total becomes 0
+  if vbuck_total <= 0:
+    break
+  print(Fore.WHITE + "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
